@@ -503,9 +503,8 @@ void update_state(String device_id, int updated_state, int alive)
   JsonArray array = doc.to<JsonArray>();
   array.add("device_update"); // event name
   JsonObject jsondata = array.createNestedObject();
-  jsondata["id"] = device_id;
-  jsondata["state"] = updated_state;
-  jsondata["alive"] = alive;
+  jsondata["device_no"] = device_id;
+  jsondata["curr_status"] = updated_state;
   String JSONdata;
   serializeJson(doc, JSONdata);
   socketIO.sendEVENT(JSONdata);
