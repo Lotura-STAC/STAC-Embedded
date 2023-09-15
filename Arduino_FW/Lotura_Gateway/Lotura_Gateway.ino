@@ -497,7 +497,7 @@ void setup()
   socketIO.onEvent(socketIOEvent);
 }
 
-void update_state(String device_id, int updated_state, int alive)
+void update_state(String device_id, String updated_state, int alive)
 {
   DynamicJsonDocument doc(1024);
   JsonArray array = doc.to<JsonArray>();
@@ -525,7 +525,7 @@ void loop()
       char trash_val[30];
       radio.read(trash_val, sizeof(trash_val));
     }
-    int DeviceStatus = RadioData[0] - '0';
+    String DeviceStatus(RadioData[0]);
     String DeviceNum_Str(&RadioData[1]);
     //int DeviceNum;
     //DeviceNum = DeviceNum_Str.toInt();

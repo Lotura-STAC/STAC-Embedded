@@ -595,7 +595,7 @@ void Dryer_Status_Judgment(float Amps_TRMS, int cnt, int m, char* DeviceNum, uns
       RadioData[0] = '1';
       DeviceNum_str += '0';
       DeviceNum_str.toCharArray(&RadioData[1], DeviceNum_str.length());
-      radio.write(&RadioData, sizeof(RadioData));
+      radio_write(&RadioData);
 
       if (ChannelNum == 1) {
         cnt1 = 1;
@@ -655,7 +655,7 @@ void Status_Judgment(float Amps_TRMS, int WaterSensorData, unsigned int l_hour, 
       RadioData[0] = '1';
       DeviceNum_str += '0';
       DeviceNum_str.toCharArray(&RadioData[1], DeviceNum_str.length());
-      radio.write(&RadioData, sizeof(RadioData));
+      radio_write(&RadioData);
       if (ChannelNum == 1) {
         cnt1 = 1;
         echoFlag1 = 1;
@@ -714,4 +714,9 @@ void SetDefaultVal() {
   Serial.println(endPeriod);
   Serial.print("Time_DRY : ");
   Serial.println(endPeriod_dryer);
+}
+
+void radio_write(char* RadioData){
+  radio.write(RadioData, sizeof(RadioData));
+  delay(1000);
 }
