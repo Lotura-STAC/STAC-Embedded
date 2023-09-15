@@ -68,8 +68,8 @@ IPAddress localGateway;
 IPAddress localSubnet;
 
 String WIFI_hostname = "ESPGateway_1";
-char Server_domain[] = "osj.pnxelec.com";
-int Server_port = 443;
+char Server_domain[] = "lotura.pnxelec.com";
+int Server_port = 80;
 SocketIOclient socketIO;
 #define USE_SERIAL Serial
 
@@ -493,15 +493,15 @@ void setup()
 
     SettingPage();
   }
-  socketIO.beginSSL(Server_domain, Server_port, "/socket.io/?EIO=4");
+  socketIO.begin(Server_domain, Server_port, "/socket.io/?EIO=4");
   socketIO.onEvent(socketIOEvent);
 }
 
-void update_state(int device_id, int updated_state, int alive)
+void update_state(String device_id, int updated_state, int alive)
 {
   DynamicJsonDocument doc(1024);
   JsonArray array = doc.to<JsonArray>();
-  array.add("update_state"); // event name
+  array.add("device_update"); // event name
   JsonObject jsondata = array.createNestedObject();
   jsondata["id"] = device_id;
   jsondata["state"] = updated_state;
@@ -532,7 +532,7 @@ void loop()
     //DeviceNum = DeviceNum_Str.toInt();
     //if (DeviceNum < 'a')
     //{
-    //update_state(DeviceNum_Str, DeviceStatus, 1);
+    update_state(DeviceNum_Str, DeviceStatus, 1);
       USE_SERIAL.print("Status : ");
       USE_SERIAL.println(DeviceStatus);
       USE_SERIAL.print("DeviceNumber : ");
@@ -540,7 +540,7 @@ void loop()
     //}
     //else
     //{
-      USE_SERIAL.println("ERROR:Wrong Number");
+      //USE_SERIAL.println("ERROR:Wrong Number");
     //}
     /*switch (data)
       {
