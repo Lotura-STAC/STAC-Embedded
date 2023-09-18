@@ -493,7 +493,7 @@ void setup()
 
     SettingPage();
   }
-  socketIO.begin(Server_domain, Server_port, "/socket.io/?EIO=4");
+  socketIO.beginSSL(Server_domain, Server_port, "/socket.io/?EIO=4");
   socketIO.onEvent(socketIOEvent);
 }
 
