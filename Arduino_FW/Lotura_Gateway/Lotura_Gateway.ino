@@ -69,7 +69,7 @@ IPAddress localSubnet;
 
 String WIFI_hostname = "ESPGateway_1";
 char Server_domain[] = "lotura.pnxelec.com";
-int Server_port = 80;
+int Server_port = 433;
 SocketIOclient socketIO;
 #define USE_SERIAL Serial
 
