@@ -99,9 +99,9 @@ void flow2() // 인터럽트 함수
 void setup()
 {
 
-  srand((unsigned int)time(NULL));
-
-  Serial.begin(115200);
+  //srand((unsigned int)time(NULL));
+  Serial.begin(115200); // Serial 통신 begin
+  // 전류 센서 & 비접촉 수위센서 & 유량센서 및 모드핀 Input Mode
   pinMode(ACS_Pin1, INPUT);
   pinMode(ACS_Pin2, INPUT);
   pinMode(DrainSensorPin1, INPUT);
@@ -109,12 +109,6 @@ void setup()
   pinMode(modeDebugPin, INPUT_PULLUP);
   pinMode(Ch1_Mode, INPUT_PULLUP);
   pinMode(Ch2_Mode, INPUT_PULLUP);
-  // pinMode(ACS_LED1, OUTPUT);
-  // pinMode(ACS_LED2, OUTPUT);
-  // pinMode(water_LED1,OUTPUT);
-  // pinMode(water_LED2,OUTPUT);
-  // pinMode(flow_LED1,OUTPUT);
-  // pinMode(flow_LED2,OUTPUT);
   pinMode(FlowSensorPin1, INPUT);
   pinMode(FlowSensorPin2, INPUT);
   digitalWrite(FlowSensorPin1, HIGH); // 선택적 내부 풀업
@@ -141,6 +135,7 @@ void setup()
 
 void loop()
 {
+  //normal Mode
   if (mode_debug)
   {
     RunningStatistics inputStats1;
@@ -150,6 +145,7 @@ void loop()
     inputStats2.setWindowSecs(windowLength);
     while (1)
     {
+      //전류값 센싱
       ACS_Value1 = analogRead(ACS_Pin1);
       ACS_Value2 = analogRead(ACS_Pin2);
 
@@ -159,12 +155,12 @@ void loop()
       Amps_TRMS1 = intercept + slope * inputStats1.sigma();
       Amps_TRMS2 = intercept + slope * inputStats2.sigma();
 
-      if (previousMillis > millis())
+      if (previousMillis > millis()) //millis() overflow방지
         previousMillis = millis();
-      if (millis() - previousMillis >= printPeriod)
+      if (millis() - previousMillis >= printPeriod) //0.5sec
       {
         previousMillis = millis();
-
+        //비접촉 수위 센서 및 유량센서 센싱
         WaterSensorData1 = digitalRead(DrainSensorPin1);
         WaterSensorData2 = digitalRead(DrainSensorPin2);
 
@@ -173,6 +169,7 @@ void loop()
 
         flow_frequency1 = 0; // 변수 초기화
         flow_frequency2 = 0;
+        // 센싱한 값들 출력
         Serial.print("ACS1 : ");
         Serial.println(Amps_TRMS1);
         Serial.print("Water1 : ");
@@ -188,20 +185,20 @@ void loop()
         Serial.print("Time : ");
         Serial.println(millis());
         Serial.println();
-      }
+      
 
-      if (mode_dryer1)
+      if (mode_dryer1) // 세탁기 동작여부 파악 함수
         Status_Judgment(Amps_TRMS1, WaterSensorData1, l_hour1, cnt1, m1, previousMillis_end1, DeviceNum_1, 1);
-      else
+      else // 건조기 동작여부 파악 함수
         Dryer_Status_Judgment(Amps_TRMS1, cnt1, m1, DeviceNum_1, previousMillis_end1, 1);
 
 
-      if (mode_dryer2)
+      if (mode_dryer2) // 세탁기 동작여부 파악 함수
         Status_Judgment(Amps_TRMS2, WaterSensorData2, l_hour2, cnt2, m2, previousMillis_end2, DeviceNum_2, 2);
-      else
+      else // 건조기 동작여부 파악 함수
         Dryer_Status_Judgment(Amps_TRMS2, cnt2, m2, DeviceNum_2 , previousMillis_end2, 2);
-
-      if (echoFlag1) {
+      }
+      /*if (echoFlag1) {
         if (millis() - echoMillis1 >= echoPeriod1) {
           echoFlag1 = 0;
           radio.write(&echoFlag1, sizeof(echoFlag1));
@@ -212,41 +209,42 @@ void loop()
           echoFlag2 = 0;
           radio.write(&echoFlag2, sizeof(echoFlag2));
         }
-      }
+      }*/
 
     }
   }
   //=======================================================================디버그 모드
   else
   {
-    if (Serial.available())
+    if (Serial.available()) // 시리얼 통신 값 입력시
     {
-      SerialData = Serial.readStringUntil('\n');
-      dex = SerialData.indexOf('+');
-      dex1 = SerialData.indexOf('"');
+      SerialData = Serial.readStringUntil('\n'); //입력 받은 값 String 
+      dex = SerialData.indexOf('+'); // AT와 실제 명령어 split용 위치값
+      dex1 = SerialData.indexOf('"'); // 명령어의 입력값 split용 위치값
 
       end = SerialData.length();
-      String AT_Command = SerialData.substring(dex + 1, dex1);
-      if (RFSET(AT_Command))
+      String AT_Command = SerialData.substring(dex + 1, dex1); // 실제 명령어 파악
+      if (RFSET(AT_Command)) // RF 주소 설정
         ;
-      else if (SENSDATA_START(AT_Command))
+      else if (SENSDATA_START(AT_Command)) // 디버깅용 센싱값 Excel 파일에 입력
         ;
       //else if (NRFREAD_START(AT_Command))
       // ;
-      else if (RFSEND(AT_Command))
+      else if (RFSEND(AT_Command)) // RF통신을 이용하여 임의 값 전송
         ;
-      else if (UPDATE(AT_Command))
+      else if (UPDATE(AT_Command)) // 꺼짐 켜짐 RF통신으로 수동 전송
         ;
-      else if (SETNUM(AT_Command))
+      else if (SETNUM(AT_Command)) // 채널별 장치 번호 설정
         ;
-      else if (NOWSTATE(AT_Command))
+      else if (NOWSTATE(AT_Command)) // 현재 RF 주소 및 채널별 장치 번호 출력
         ;
-      else if (SETDEL_WSH(AT_Command))
+      else if (SETDEL_WSH(AT_Command)) // 센서 반응 지연 시간 설정 (세탁기)
         ;
-      else if (SETDEL_DRY(AT_Command))
+      else if (SETDEL_DRY(AT_Command)) // 센서 반응 지연 시간 설정 (건조기)
+
         ;
       else
-        Serial.println("ERROR:Unknown command");
+        Serial.println("ERROR:Unknown command"); // 형식에 맞지 않은 명령어 예외처리
     }
   }
 }
@@ -565,7 +563,7 @@ void Dryer_Status_Judgment(float Amps_TRMS, int cnt, int m, char* DeviceNum, uns
       RadioData[0] = '0';
       DeviceNum_str += '0';
       DeviceNum_str.toCharArray(&RadioData[1], DeviceNum_str.length());
-      radio.write(&RadioData, sizeof(RadioData));
+      radio_write(RadioData);
       if (ChannelNum == 1)  cnt1 = 0;
       if (ChannelNum == 2)  cnt2 = 0;
       Serial.println(RadioData);
@@ -595,7 +593,7 @@ void Dryer_Status_Judgment(float Amps_TRMS, int cnt, int m, char* DeviceNum, uns
       RadioData[0] = '1';
       DeviceNum_str += '0';
       DeviceNum_str.toCharArray(&RadioData[1], DeviceNum_str.length());
-      radio_write(&RadioData);
+      radio_write(RadioData);
 
       if (ChannelNum == 1) {
         cnt1 = 1;
@@ -625,7 +623,7 @@ void Status_Judgment(float Amps_TRMS, int WaterSensorData, unsigned int l_hour, 
       RadioData[0] = '0';
       DeviceNum_str += '0';
       DeviceNum_str.toCharArray(&RadioData[1], DeviceNum_str.length());
-      radio.write(&RadioData, sizeof(RadioData));
+      radio_write(RadioData);
       if (ChannelNum == 1)  cnt1 = 0;
       if (ChannelNum == 2)  cnt2 = 0;
       Serial.println(RadioData);
@@ -655,7 +653,7 @@ void Status_Judgment(float Amps_TRMS, int WaterSensorData, unsigned int l_hour, 
       RadioData[0] = '1';
       DeviceNum_str += '0';
       DeviceNum_str.toCharArray(&RadioData[1], DeviceNum_str.length());
-      radio_write(&RadioData);
+      radio_write(RadioData);
       if (ChannelNum == 1) {
         cnt1 = 1;
         echoFlag1 = 1;
@@ -717,6 +715,6 @@ void SetDefaultVal() {
 }
 
 void radio_write(char* RadioData){
-  radio.write(RadioData, sizeof(RadioData));
-  delay(1000);
+  radio.write(RadioData, 9);
+  //delay(1000);
 }
